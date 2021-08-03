@@ -1,63 +1,55 @@
 package com.example.demo;
 
+import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
 
-import java.util.ArrayList;
-import java.util.List;
-import java.util.concurrent.atomic.AtomicLong;
+import java.util.Optional;
 
 @RestController
 public class BucketListController {
 
-    private List<BucketList> myBucketList = new ArrayList();
-    private final AtomicLong counter = new AtomicLong();
-
-    public BucketListController(){
-        myBucketList.add(new BucketList(counter.incrementAndGet(), "Visit Colosseum in Rome"));
-    }
+    @Autowired
+    BucketRepository bucketRepository;
 
     @GetMapping(value = "/")
     public ResponseEntity index() {
-        return ResponseEntity.ok(myBucketList);
+        return ResponseEntity.ok(bucketRepository.findAll());
     }
 
     @GetMapping(value = "/bucket")
     public ResponseEntity getBucket(@RequestParam(value="id") Long id) {
-        BucketList itemToReturn = null;
-        for(BucketList bucket : myBucketList){
-            if(bucket.getId() == id)
-                itemToReturn = bucket;
-        }
+        Optional<BucketList> foundBucketList = bucketRepository.findById(id);
 
-        return ResponseEntity.ok(itemToReturn);
+        if(foundBucketList.isPresent()){
+            return ResponseEntity.ok(foundBucketList.get());
+        }else {
+            return ResponseEntity.badRequest().body("No bucket with specified id " + id + " found");
+        }
     }
 
     @PostMapping(value = "/")
-    public ResponseEntity addToBucketList(@RequestParam(value="name") String name) {
-        myBucketList.add(new BucketList(counter.incrementAndGet(), name));
-        return ResponseEntity.ok(myBucketList);
+    public ResponseEntity addToBucketList(@RequestParam(value="name") String name, @RequestParam(value="description") String desc) {
+        return ResponseEntity.ok(bucketRepository.save(new BucketList(name, desc)));
     }
 
     @PutMapping(value = "/")
-    public ResponseEntity updateBucketList(@RequestParam(value="name") String name, @RequestParam(value="id") Long id) {
-        myBucketList.forEach(bucketList ->  {
-            if(bucketList.getId() == id){
-                bucketList.setName(name);
-            }
-        });
-        return ResponseEntity.ok(myBucketList);
+    public ResponseEntity updateBucketList(@RequestParam(value="name") String name, @RequestParam(value="id") Long id, @RequestParam(value="description") String desc) {
+        Optional<BucketList> optionalBucketList = bucketRepository.findById(id);
+        if(!optionalBucketList.isPresent()){
+            return ResponseEntity.badRequest().body("No bucket with specified id " + id + " found");
+        }
+
+        BucketList foundBucketList = optionalBucketList.get();
+        foundBucketList.setName(name);
+        foundBucketList.setDescription(desc);
+
+        return ResponseEntity.ok(bucketRepository.save(foundBucketList));
     }
 
     @DeleteMapping(value = "/")
     public ResponseEntity removeBucketList(@RequestParam(value="id") Long id) {
-        BucketList itemToRemove = null;
-        for(BucketList bucket : myBucketList){
-            if(bucket.getId() == id)
-                itemToRemove = bucket;
-        }
-
-        myBucketList.remove(itemToRemove);
-        return ResponseEntity.ok(myBucketList);
+        bucketRepository.deleteById(id);
+        return ResponseEntity.noContent().build();
     }
 }
