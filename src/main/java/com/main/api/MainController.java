@@ -44,7 +44,7 @@ public class MainController{
     }
 
 
-    @GetMapping(value = "/delete/{id}")
+    @DeleteMapping(value = "/delete/{id}")
     public ResponseEntity<StudentDTO> delete(@PathVariable String id) throws Exception {
         StudentDTO studentDTO = studentServiceApi.get(id);
         if (studentDTO != null) {
