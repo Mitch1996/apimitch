@@ -2,5 +2,4 @@ package com.example.demo;
 
 import org.springframework.data.jpa.repository.JpaRepository;
 
-public interface BucketRepository extends JpaRepository<BucketList, Long> {
-}
+public interface UserRepository extends JpaRepository<Student, Long> { }
