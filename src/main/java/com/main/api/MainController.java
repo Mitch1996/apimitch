@@ -18,7 +18,7 @@ import java.util.Map;
 @RestController
 @RequestMapping("/api/v1")
 @CrossOrigin("*")
-public class MainController{
+public class MainController {
 
     @Autowired
     private StudentServiceApi studentServiceApi;
